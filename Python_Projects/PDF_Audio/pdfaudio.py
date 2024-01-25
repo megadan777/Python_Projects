@@ -32,34 +32,32 @@ for file_name in file_names:
 # This is just a print command that outputs to console that the
 # file was already in director
 
-import PyPDF2
+import fitz  # PyMuPDF
 import pyttsx3
 import os
-
-# Get the current script directory
-script_dir = os.path.dirname(os.path.abspath(__file__))
 
 # Specify the PDF file name
 pdf_file_name = 'The_Subsidiary_Hierarchy.pdf'
 
 # Combine the directory and file name to get the full path
+script_dir = os.path.abspath(os.getcwd())  # Get the current working directory
 pdf_file_path = os.path.join(script_dir, pdf_file_name)
 
-# Open the PDF file using PdfReader
-with open(pdf_file_path, 'rb') as pdf_file:
-    pdf_reader = PyPDF2.PdfReader(pdf_file)
-
+# Open the PDF file using PyMuPDF
+pdf_document = fitz.open(pdf_file_path)
 
 # Initialize the text-to-speech engine
 speaker = pyttsx3.init()
 
+# Combine text from all pages
 full_text = ""
-for page_num in range(len(pdf_reader.pages)):
-    text = pdf_reader.pages[page_num].extract_text()
+for page_num in range(pdf_document.page_count):
+    page = pdf_document[page_num]
+    text = page.get_text()
     clean_text = text.strip().replace('\n', ' ')
     full_text += clean_text
 
-#Full text print
+# Print the combined text
 print(full_text)
 
 # Save the text to an MP3 file
@@ -67,4 +65,8 @@ mp3_file_path = 'The_Subsidiary_Hierarchy.mp3'
 speaker.save_to_file(full_text, mp3_file_path)
 speaker.runAndWait()
 
+# Stop the text-to-speech engine
 speaker.stop()
+
+# Close the PDF document
+pdf_document.close()
